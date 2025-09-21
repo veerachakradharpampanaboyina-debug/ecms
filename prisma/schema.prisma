@@ -93,6 +93,7 @@ model User {
   files        FileStorage[]
   fileShares   FileShare[]
   storageQuota UserStorageQuota?
+  emailAccounts EmailAccount[]
 
   // Indexes for performance
   @@index([role])
@@ -679,6 +680,8 @@ model EmailAccount {
   id            String   @id @default(cuid())
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailDomainId String?
+  emailDomain   EmailDomain? @relation(fields: [emailDomainId], references: [id])
   email         String   @unique
   password      String
   quota         Int      @default(104857600) // 100MB default quota in bytes

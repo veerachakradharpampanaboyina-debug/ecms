@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { adminDb } from './firebase'
-import { userService } from './firestore-models'
+import { userService, departmentService, studentService, facultyService, courseService } from './firestore-models'
 
 // Database connection configuration for high concurrency
 const connectionConfig = {
@@ -210,8 +210,20 @@ export const firestoreDb = {
   course: courseService,
   
   // Generic Firestore operations
-  collection: (name: string) => collection(adminDb, name),
-  doc: (path: string) => doc(adminDb, path),
+  collection: (name: string) => {
+    if (!adminDb) {
+      console.error("adminDb is undefined. Firebase Admin SDK might not be initialized correctly.");
+      throw new Error("Firestore Admin SDK not initialized.");
+    }
+    return collection(adminDb, name);
+  },
+  doc: (path: string) => {
+    if (!adminDb) {
+      console.error("adminDb is undefined. Firebase Admin SDK might not be initialized correctly.");
+      throw new Error("Firestore Admin SDK not initialized.");
+    }
+    return doc(adminDb, path);
+  },
   
   // Health check
   async healthCheck() {

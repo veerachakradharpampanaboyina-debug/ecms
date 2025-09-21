@@ -19,6 +19,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
+export const dynamic = 'force-dynamic'
+
 export default function AboutPage() {
   const stats = [
     { icon: GraduationCap, label: "Students Enrolled", value: "5000+" },

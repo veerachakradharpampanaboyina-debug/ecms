@@ -1,8 +1,6 @@
 import { adminDb } from './firebase-server'
 import { UserRole, Gender, PaymentStatus, AttendanceStatus, Grade } from './types'
 import { 
-  collection, 
-  doc, 
   getDoc, 
   getDocs, 
   addDoc, 
@@ -15,7 +13,7 @@ import {
   Timestamp,
   setDoc,
   serverTimestamp 
-} from 'firebase/firestore'
+} from 'firebase-admin/firestore'
 
 // Base User Model
 export interface User {
@@ -33,10 +31,10 @@ export interface User {
 
 // User Model Service
 export class UserService {
-  private collection = collection(adminDb, 'users')
+  private collectionRef = adminDb.collection('users')
 
   async create(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
+    const docRef = await addDoc(this.collectionRef, {
       ...userData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -45,7 +43,7 @@ export class UserService {
   }
 
   async getById(id: string): Promise<User | null> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -63,7 +61,7 @@ export class UserService {
   }
 
   async getByEmail(email: string): Promise<User | null> {
-    const q = query(this.collection, where('email', '==', email))
+    const q = query(this.collectionRef, where('email', '==', email))
     const querySnapshot = await getDocs(q)
     
     if (querySnapshot.empty) {
@@ -82,7 +80,7 @@ export class UserService {
   }
 
   async update(id: string, userData: Partial<User>): Promise<void> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     await updateDoc(docRef, {
       ...userData,
       updatedAt: serverTimestamp()
@@ -90,12 +88,12 @@ export class UserService {
   }
 
   async delete(id: string): Promise<void> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     await deleteDoc(docRef)
   }
 
   async getAll(limitCount = 50): Promise<User[]> {
-    const q = query(this.collection, orderBy('createdAt', 'desc'), limit(limitCount))
+    const q = query(this.collectionRef, orderBy('createdAt', 'desc'), limit(limitCount))
     const querySnapshot = await getDocs(q)
     
     return querySnapshot.docs.map(doc => {
@@ -111,7 +109,7 @@ export class UserService {
   }
 
   async getByRole(role: UserRole): Promise<User[]> {
-    const q = query(this.collection, where('role', '==', role))
+    const q = query(this.collectionRef, where('role', '==', role))
     const querySnapshot = await getDocs(q)
     
     return querySnapshot.docs.map(doc => {
@@ -139,10 +137,10 @@ export interface Department {
 }
 
 export class DepartmentService {
-  private collection = collection(adminDb, 'departments')
+  private collectionRef = adminDb.collection('departments')
 
   async create(deptData: Omit<Department, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
+    const docRef = await addDoc(this.collectionRef, {
       ...deptData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -151,7 +149,7 @@ export class DepartmentService {
   }
 
   async getById(id: string): Promise<Department | null> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -168,7 +166,7 @@ export class DepartmentService {
   }
 
   async getAll(): Promise<Department[]> {
-    const q = query(this.collection, orderBy('createdAt', 'desc'))
+    const q = query(this.collectionRef, orderBy('createdAt', 'desc'))
     const querySnapshot = await getDocs(q)
     
     return querySnapshot.docs.map(doc => {
@@ -209,10 +207,10 @@ export interface Student {
 }
 
 export class StudentService {
-  private collection = collection(adminDb, 'students')
+  private collectionRef = adminDb.collection('students')
 
   async create(studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
+    const docRef = await addDoc(this.collectionRef, {
       ...studentData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -221,7 +219,7 @@ export class StudentService {
   }
 
   async getById(id: string): Promise<Student | null> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -240,7 +238,7 @@ export class StudentService {
   }
 
   async getByUserId(userId: string): Promise<Student | null> {
-    const q = query(this.collection, where('userId', '==', userId))
+    const q = query(this.collectionRef, where('userId', '==', userId))
     const querySnapshot = await getDocs(q)
     
     if (querySnapshot.empty) {
@@ -260,7 +258,7 @@ export class StudentService {
   }
 
   async getByRollNumber(rollNumber: string): Promise<Student | null> {
-    const q = query(this.collection, where('rollNumber', '==', rollNumber))
+    const q = query(this.collectionRef, where('rollNumber', '==', rollNumber))
     const querySnapshot = await getDocs(q)
     
     if (querySnapshot.empty) {
@@ -296,10 +294,10 @@ export interface Faculty {
 }
 
 export class FacultyService {
-  private collection = collection(adminDb, 'faculty')
+  private collectionRef = adminDb.collection('faculty')
 
   async create(facultyData: Omit<Faculty, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
+    const docRef = await addDoc(this.collectionRef, {
       ...facultyData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -308,7 +306,7 @@ export class FacultyService {
   }
 
   async getById(id: string): Promise<Faculty | null> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -326,7 +324,7 @@ export class FacultyService {
   }
 
   async getByUserId(userId: string): Promise<Faculty | null> {
-    const q = query(this.collection, where('userId', '==', userId))
+    const q = query(this.collectionRef, where('userId', '==', userId))
     const querySnapshot = await getDocs(q)
     
     if (querySnapshot.empty) {
@@ -345,7 +343,7 @@ export class FacultyService {
   }
 
   async getByDepartment(departmentId: string): Promise<Faculty[]> {
-    const q = query(this.collection, where('departmentId', '==', departmentId))
+    const q = query(this.collectionRef, where('departmentId', '==', departmentId))
     const querySnapshot = await getDocs(q)
     
     return querySnapshot.docs.map(doc => {
@@ -374,10 +372,10 @@ export interface Course {
 }
 
 export class CourseService {
-  private collection = collection(adminDb, 'courses')
+  private collectionRef = adminDb.collection('courses')
 
   async create(courseData: Omit<Course, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
+    const docRef = await addDoc(this.collectionRef, {
       ...courseData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -386,7 +384,7 @@ export class CourseService {
   }
 
   async getById(id: string): Promise<Course | null> {
-    const docRef = doc(this.collection, id)
+    const docRef = this.collectionRef.doc(id)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -403,7 +401,7 @@ export class CourseService {
   }
 
   async getAll(): Promise<Course[]> {
-    const q = query(this.collection, orderBy('createdAt', 'desc'))
+    const q = query(this.collectionRef, orderBy('createdAt', 'desc'))
     const querySnapshot = await getDocs(q)
     
     return querySnapshot.docs.map(doc => {

@@ -29,6 +29,9 @@ import {
   Info
 } from "lucide-react"
 import { format, addDays, subDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from "date-fns"
+import { cn } from "@/lib/utils"
+
+export const dynamic = 'force-dynamic'
 
 interface AttendanceRecord {
   id: string

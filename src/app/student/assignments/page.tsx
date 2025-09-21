@@ -33,6 +33,8 @@ import {
 } from "lucide-react"
 import { format, differenceInDays, isAfter, isBefore, addDays } from "date-fns"
 
+export const dynamic = 'force-dynamic'
+
 interface Assignment {
   id: string
   title: string

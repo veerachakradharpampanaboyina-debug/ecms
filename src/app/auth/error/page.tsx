@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, ArrowLeft, RefreshCw } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()
   const [errorDetails, setErrorDetails] = useState<string>("")

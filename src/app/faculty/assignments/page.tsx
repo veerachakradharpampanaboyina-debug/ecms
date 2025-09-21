@@ -18,6 +18,8 @@ import { CalendarIcon, Plus, FileText, Users, Clock, CheckCircle, Eye, Edit, Tra
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 
+export const dynamic = 'force-dynamic'
+
 interface Assignment {
   id: string
   title: string
