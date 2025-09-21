@@ -33,8 +33,7 @@ export async function GET() {
     const loadBalancer = LoadBalancer.getInstance()
     const servers = loadBalancer['servers'] || []
     
-    // Cache status
-    const cacheSize = loadBalancer['cache']?.size || 0
+    
 
     const totalLatency = Date.now() - startTime
 
@@ -67,11 +66,7 @@ export async function GET() {
         totalServers: servers.length,
       },
       
-      // Cache
-      cache: {
-        size: cacheSize,
-        status: cacheSize > 10000 ? 'warning' : 'healthy',
-      },
+      
       
       // Performance
       performance: {

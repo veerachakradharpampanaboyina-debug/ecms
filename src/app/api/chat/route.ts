@@ -40,7 +40,7 @@ async function getChatRooms(req: NextRequest) {
   
 
   // Get user's chat rooms
-  const membersRef = collection(firestoreDb.collection('chat_rooms'), 'members')
+  const membersRef = firestoreDb.collection('chat_rooms').collection('members')
   const q = query(
     membersRef,
     where('userId', '==', session.user.id),
@@ -68,7 +68,7 @@ async function getChatRooms(req: NextRequest) {
       const roomId = roomDoc.id
       
       // Get members
-      const roomMembersRef = collection(firestoreDb.collection('chat_rooms'), roomId, 'members')
+      const roomMembersRef = firestoreDb.collection('chat_rooms').doc(roomId).collection('members')
       const membersQuery = query(roomMembersRef, where('isActive', '==', true))
       const memberDocs = await getDocs(membersQuery)
       const members = await Promise.all(
@@ -96,7 +96,7 @@ async function getChatRooms(req: NextRequest) {
       const creatorData = creatorDoc.data()
 
       // Get message count
-      const messagesRef = collection(firestoreDb.collection('chat_rooms'), roomId, 'messages')
+      const messagesRef = firestoreDb.collection('chat_rooms').doc(roomId).collection('messages')
       const messagesQuery = query(messagesRef, where('isDeleted', '==', false))
       const messageDocs = await getDocs(messagesQuery)
       const messageCount = messageDocs.size
@@ -127,7 +127,7 @@ async function getChatRooms(req: NextRequest) {
       const member = room.members.find(m => m.userId === session.user.id)
       
       // Get unread count
-      const messagesRef = collection(firestoreDb.collection('chat_rooms'), room.id, 'messages')
+      const messagesRef = firestoreDb.collection('chat_rooms').doc(room.id).collection('messages')
       let unreadQuery = query(
         messagesRef,
         where('senderId', '!=', session.user.id),
@@ -363,7 +363,7 @@ async function sendChatMessage(req: NextRequest) {
   const validatedData = chatMessageSchema.parse(body)
 
   // Check if user is member of the room
-  const membersRef = collection(firestoreDb.collection('chat_rooms'), validatedData.roomId, 'members')
+  const membersRef = firestoreDb.collection('chat_rooms').doc(validatedData.roomId).collection('members')
   const memberQuery = query(
     membersRef,
     where('userId', '==', session.user.id),
@@ -376,7 +376,7 @@ async function sendChatMessage(req: NextRequest) {
   }
 
   // Create message
-  const messagesRef = collection(firestoreDb.collection('chat_rooms'), validatedData.roomId, 'messages')
+  const messagesRef = firestoreDb.collection('chat_rooms').doc(validatedData.roomId).collection('messages')
   const messageDoc = await addDoc(messagesRef, {
     ...validatedData,
     senderId: session.user.id,
