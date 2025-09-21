@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getServerSession, Session } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 async function getAdminSession(req: NextRequest) {
-  const session = await getServerSession(authOptions as any);
-  if (!session || (session.user as any)?.role !== 'ADMIN') {
+  const session: Session | null = await getServerSession(authOptions as any);
+  if (!session || session.user?.role !== 'ADMIN') {
     return null;
   }
   return session;

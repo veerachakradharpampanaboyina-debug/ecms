@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 // Helper to check for admin role
 async function isAdmin(req: NextRequest) {
-  const session = await getServerSession(authOptions as any)
+  const session: Session | null = await getServerSession(authOptions as any)
   // The type casting to any is a workaround for a possible type mismatch issue with NextAuth v4 and v5 in some setups.
   // It's important to ensure your authOptions are correctly defined.
-  if (!session || (session.user as any)?.role !== 'ADMIN') {
+  if (!session || session.user?.role !== 'ADMIN') {
     return false
   }
   return true

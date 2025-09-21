@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
-import { UserRole } from "@prisma/client"
+type UserRole = "ADMIN" | "HOD" | "FACULTY" | "STUDENT" | "PARENT";
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -46,33 +46,33 @@ export default function Navbar() {
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN: return Shield
-      case UserRole.HOD: return Building
-      case UserRole.FACULTY: return BookOpen
-      case UserRole.STUDENT: return StudentIcon
-      case UserRole.PARENT: return ParentIcon
+      case "ADMIN": return Shield
+      case "HOD": return Building
+      case "FACULTY": return BookOpen
+      case "STUDENT": return StudentIcon
+      case "PARENT": return ParentIcon
       default: return User
     }
   }
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN: return "bg-red-100 text-red-800"
-      case UserRole.HOD: return "bg-blue-100 text-blue-800"
-      case UserRole.FACULTY: return "bg-green-100 text-green-800"
-      case UserRole.STUDENT: return "bg-purple-100 text-purple-800"
-      case UserRole.PARENT: return "bg-yellow-100 text-yellow-800"
+      case "ADMIN": return "bg-red-100 text-red-800"
+      case "HOD": return "bg-blue-100 text-blue-800"
+      case "FACULTY": return "bg-green-100 text-green-800"
+      case "STUDENT": return "bg-purple-100 text-purple-800"
+      case "PARENT": return "bg-yellow-100 text-yellow-800"
       default: return "bg-gray-100 text-gray-800"
     }
   }
 
   const getDashboardLink = (role: UserRole) => {
     switch (role) {
-      case UserRole.ADMIN: return "/admin"
-      case UserRole.HOD: return "/hod"
-      case UserRole.FACULTY: return "/faculty"
-      case UserRole.STUDENT: return "/student"
-      case UserRole.PARENT: return "/parent"
+      case "ADMIN": return "/admin"
+      case "HOD": return "/hod"
+      case "FACULTY": return "/faculty"
+      case "STUDENT": return "/student"
+      case "PARENT": return "/parent"
       default: return "/"
     }
   }
