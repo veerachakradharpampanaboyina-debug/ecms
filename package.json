@@ -122,6 +122,7 @@
     "@types/serve-static": "^1.15.8",
     "@types/tough-cookie": "^4.0.5",
     "@types/unist": "^3.0.3",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.3",
     "nodemon": "^3.1.0",
