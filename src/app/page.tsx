@@ -68,8 +68,8 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              College Technology
-              <span className="block text-yellow-400">Infrastructure Suite</span>
+              Engineering College
+              <span className="block text-yellow-400">Management System</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-blue-100">
               Transforming education through comprehensive technology solutions, security, and innovation
