@@ -11,22 +11,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, User, Lock, GraduationCap, Users, BookOpen, Building, Shield } from "lucide-react"
-import { UserRole } from "@prisma/client"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [selectedRole, setSelectedRole] = useState<UserRole | "">("")
+  const [selectedRole, setSelectedRole] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const roleOptions = [
-    { value: UserRole.ADMIN, label: "Administrator", icon: Shield, color: "bg-red-100 text-red-800", description: "System administration and configuration" },
-    { value: UserRole.HOD, label: "Head of Department", icon: Building, color: "bg-blue-100 text-blue-800", description: "Department management and oversight" },
-    { value: UserRole.FACULTY, label: "Faculty", icon: BookOpen, color: "bg-green-100 text-green-800", description: "Teaching and academic management" },
-    { value: UserRole.STUDENT, label: "Student", icon: GraduationCap, color: "bg-purple-100 text-purple-800", description: "Academic progress and resources" },
-    { value: UserRole.PARENT, label: "Parent", icon: Users, color: "bg-yellow-100 text-yellow-800", description: "Student progress monitoring" }
+    { value: "ADMIN", label: "Administrator", icon: Shield, color: "bg-red-100 text-red-800", description: "System administration and configuration" },
+    { value: "HOD", label: "Head of Department", icon: Building, color: "bg-blue-100 text-blue-800", description: "Department management and oversight" },
+    { value: "FACULTY", label: "Faculty", icon: BookOpen, color: "bg-green-100 text-green-800", description: "Teaching and academic management" },
+    { value: "STUDENT", label: "Student", icon: GraduationCap, color: "bg-purple-100 text-purple-800", description: "Academic progress and resources" },
+    { value: "PARENT", label: "Parent", icon: Users, color: "bg-yellow-100 text-yellow-800", description: "Student progress monitoring" }
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,7 +140,7 @@ export default function SignInPage() {
 
                 <div className="space-y-2">
                   <Label>Select Your Role</Label>
-                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
