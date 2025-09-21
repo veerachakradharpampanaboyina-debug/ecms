@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/firebase-auth'
 import { firestoreDb } from '@/lib/db'
 import { withErrorHandling } from '@/lib/error-handler'
 import { ErrorHandler } from '@/lib/error-handler'
-import { cache } from '@/lib/redis-cache'
 import { z } from 'zod'
 import { collection, query, where, orderBy, limit, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore'
 
@@ -37,13 +36,7 @@ async function getEmails(req: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1')
   const limitCount = parseInt(searchParams.get('limit') || '20')
 
-  // Try to get from cache first
-  const cacheKey = `emails_${session.user.id}_${folder}_${page}_${limitCount}`
-  const cachedEmails = await cache.get(cacheKey)
   
-  if (cachedEmails) {
-    return NextResponse.json(cachedEmails)
-  }
 
   // Get user's email account
   const emailAccountRef = doc(firestoreDb.collection('email_accounts'), session.user.id)
@@ -84,8 +77,7 @@ async function getEmails(req: NextRequest) {
     },
   }
 
-  // Cache the result
-  await cache.set(cacheKey, response, { ttl: 300 }) // 5 minutes
+  
 
   return NextResponse.json(response)
 }
@@ -141,8 +133,7 @@ async function sendEmail(req: NextRequest) {
     updatedAt: serverTimestamp(),
   })
 
-  // Clear cache
-  await cache.clearPattern(`emails_${session.user.id}_*`)
+  
 
   // Send actual email (integration with email service)
   // This would integrate with services like SendGrid, AWS SES, or custom SMTP
@@ -261,8 +252,7 @@ async function updateEmailStatus(req: NextRequest) {
     updatedAt: serverTimestamp(),
   })
 
-  // Clear cache
-  await cache.clearPattern(`emails_${session.user.id}_*`)
+  
 
   return NextResponse.json({ success: true })
 }
@@ -310,8 +300,7 @@ async function deleteEmail(req: NextRequest) {
     updatedAt: serverTimestamp(),
   })
 
-  // Clear cache
-  await cache.clearPattern(`emails_${session.user.id}_*`)
+  
 
   return NextResponse.json({ success: true })
 }

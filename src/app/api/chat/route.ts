@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/firebase-auth'
 import { firestoreDb } from '@/lib/db'
 import { withErrorHandling } from '@/lib/error-handler'
 import { ErrorHandler } from '@/lib/error-handler'
-import { cache } from '@/lib/redis-cache'
 import { z } from 'zod'
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, serverTimestamp } from 'firebase/firestore'
 
@@ -38,13 +37,7 @@ async function getChatRooms(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const type = searchParams.get('type')
 
-  // Try to get from cache first
-  const cacheKey = `chat_rooms_${session.user.id}_${type || 'all'}`
-  const cachedRooms = await cache.get(cacheKey)
   
-  if (cachedRooms) {
-    return NextResponse.json(cachedRooms)
-  }
 
   // Get user's chat rooms
   const membersRef = collection(firestoreDb.collection('chat_rooms'), 'members')
@@ -160,8 +153,7 @@ async function getChatRooms(req: NextRequest) {
     })
   )
 
-  // Cache the result
-  await cache.set(cacheKey, roomsWithUnread, { ttl: 60 }) // 1 minute
+  
 
   return NextResponse.json(roomsWithUnread)
 }
@@ -242,8 +234,7 @@ async function createChatRoom(req: NextRequest) {
     }
   }
 
-  // Clear cache
-  await cache.clearPattern(`chat_rooms_${session.user.id}_*`)
+
 
   return NextResponse.json(chatRoom)
 }
@@ -277,13 +268,7 @@ async function getChatMessages(req: NextRequest) {
     throw ErrorHandler.ForbiddenError('You are not a member of this chat room')
   }
 
-  // Try to get from cache first
-  const cacheKey = `chat_messages_${roomId}_${page}_${limitCount}`
-  const cachedMessages = await cache.get(cacheKey)
   
-  if (cachedMessages) {
-    return NextResponse.json(cachedMessages)
-  }
 
   // Get messages with pagination
   const messagesRef = collection(firestoreDb.collection('chat_rooms'), roomId, 'messages')
@@ -356,8 +341,7 @@ async function getChatMessages(req: NextRequest) {
     },
   }
 
-  // Cache the result
-  await cache.set(cacheKey, response, { ttl: 30 }) // 30 seconds
+  
 
   // Update last read time
   const memberDoc = memberDocs.docs[0]
@@ -430,8 +414,8 @@ async function sendChatMessage(req: NextRequest) {
   })
 
   // Clear cache
-  await cache.clearPattern(`chat_messages_${validatedData.roomId}_*`)
-  await cache.clearPattern(`chat_rooms_*_${session.user.id}_*`)
+  
+  
 
   // Emit real-time message via WebSocket
   try {
@@ -509,8 +493,7 @@ async function joinChatRoom(req: NextRequest) {
     })
   }
 
-  // Clear cache
-  await cache.clearPattern(`chat_rooms_${session.user.id}_*`)
+
 
   return NextResponse.json({ success: true })
 }
@@ -548,8 +531,7 @@ async function leaveChatRoom(req: NextRequest) {
     isActive: false,
   })
 
-  // Clear cache
-  await cache.clearPattern(`chat_rooms_${session.user.id}_*`)
+
 
   return NextResponse.json({ success: true })
 }
