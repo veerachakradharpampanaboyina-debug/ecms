@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cache } from '@/lib/redis-cache'
 import { ErrorHandler } from '@/lib/error-handler'
 
 interface ServerNode {
@@ -225,11 +224,8 @@ export class HorizontalScaler {
     const totalConnections = healthyServers.reduce((sum, s) => sum + s.currentConnections, 0)
     const averageResponseTime = healthyServers.reduce((sum, s) => sum + s.responseTime, 0) / healthyServers.length
 
-    // Get system metrics from cache
-    const [totalRequests, errorRate] = await Promise.all([
-      cache.getCounter('total_requests'),
-      this.calculateErrorRate()
-    ])
+    const totalRequests = 0
+    const errorRate = 0
 
     // Get memory and CPU usage (simplified)
     const memoryUsage = process.memoryUsage()
@@ -256,11 +252,7 @@ export class HorizontalScaler {
   }
 
   private async calculateErrorRate(): Promise<number> {
-    const totalRequests = await cache.getCounter('total_requests')
-    const errorCount = await cache.getCounter('error_count')
-    
-    if (totalRequests === 0) return 0
-    return (errorCount / totalRequests) * 100
+    return 0
   }
 
   private shouldScaleUp(metrics: ScalingMetrics): boolean {
@@ -371,15 +363,7 @@ export class HorizontalScaler {
   }
 
   private async logScalingEvent(action: string, data: any): Promise<void> {
-    try {
-      await cache.set(`scaling_event:${Date.now()}`, {
-        action,
-        data,
-        timestamp: new Date().toISOString()
-      }, { ttl: 86400 }) // Keep for 24 hours
-    } catch (error) {
-      console.error('Failed to log scaling event:', error)
-    }
+    
   }
 
   public selectServer(req: NextRequest): ServerNode | null {

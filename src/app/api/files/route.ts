@@ -39,13 +39,7 @@ async function getFiles(req: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1')
   const limitCount = parseInt(searchParams.get('limit') || '20')
 
-  // Try to get from cache first
-  const cacheKey = `files_${session.user.id}_${category || 'all'}_${page}_${limitCount}`
-  const cachedFiles = await cache.get(cacheKey)
   
-  if (cachedFiles) {
-    return NextResponse.json(cachedFiles)
-  }
 
   // Get user's storage quota
   const quotaRef = doc(firestoreDb.collection('user_storage_quotas'), session.user.id)
@@ -152,8 +146,7 @@ async function getFiles(req: NextRequest) {
     },
   }
 
-  // Cache the result
-  await cache.set(cacheKey, response, { ttl: 300 }) // 5 minutes
+  
 
   return NextResponse.json(response)
 }
@@ -266,8 +259,7 @@ async function uploadFile(req: NextRequest) {
     shares: []
   }
 
-  // Clear cache
-  await cache.clearPattern(`files_${session.user.id}_*`)
+  
 
   return NextResponse.json({ success: true, file: fileRecord })
 }
@@ -332,8 +324,7 @@ async function shareFile(req: NextRequest) {
     file: fileData
   }
 
-  // Clear cache
-  await cache.clearPattern(`files_${session.user.id}_*`)
+  
 
   return NextResponse.json({ success: true, share })
 }
@@ -387,8 +378,7 @@ async function deleteFile(req: NextRequest) {
     })
   }
 
-  // Clear cache
-  await cache.clearPattern(`files_${session.user.id}_*`)
+  
 
   return NextResponse.json({ success: true })
 }

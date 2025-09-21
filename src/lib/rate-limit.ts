@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { cache } from '@/lib/redis-cache'
 
 interface RateLimitData {
   count: number
@@ -24,18 +23,17 @@ export class RateLimiter {
   private maxRequests: number
   private windowMs: number
   private keyGenerator: (req: NextRequest) => string
-  private useRedis: boolean = true
+  
 
   constructor(options: {
     maxRequests?: number
     windowMs?: number
     keyGenerator?: (req: NextRequest) => string
-    useRedis?: boolean
   } = {}) {
     this.maxRequests = options.maxRequests || 5 // Default: 5 requests
     this.windowMs = options.windowMs || 60 * 1000 // Default: 1 minute
     this.keyGenerator = options.keyGenerator || this.defaultKeyGenerator
-    this.useRedis = options.useRedis !== false // Default to true
+    
   }
 
   private defaultKeyGenerator(req: NextRequest): string {
@@ -50,39 +48,10 @@ export class RateLimiter {
     const now = new Date()
     const resetTime = new Date(now.getTime() + this.windowMs)
 
-    // Try Redis first if enabled
-    if (this.useRedis) {
-      try {
-        const redisResult = await this.checkRedis(key, this.maxRequests, Math.floor(this.windowMs / 1000))
-        if (redisResult) {
-          return {
-            allowed: redisResult.allowed,
-            remaining: redisResult.remaining,
-            resetTime: new Date(redisResult.resetTime * 1000)
-          }
-        }
-      } catch (error) {
-        console.warn('Redis rate limiting failed, falling back to memory:', error)
-      }
-    }
-
-    // Fallback to memory store
     return this.checkMemory(key, now, resetTime)
   }
 
-  private async checkRedis(key: string, limit: number, windowSeconds: number): Promise<{
-    allowed: boolean
-    remaining: number
-    resetTime: number
-  } | null> {
-    try {
-      const result = await cache.incrementRateLimit(key, limit, windowSeconds)
-      return result
-    } catch (error) {
-      console.error('Redis rate limiting error:', error)
-      return null
-    }
-  }
+  
 
   private checkMemory(key: string, now: Date, resetTime: Date): { allowed: boolean; remaining: number; resetTime: Date } {
     const existing = memoryStore.get(key)
@@ -125,20 +94,20 @@ export const authRateLimiter = new RateLimiter({
     const email = req.headers.get('x-email') || 'unknown'
     return `auth_limit:${ip}:${email}`
   },
-  useRedis: true
+  
 })
 
 export const apiRateLimiter = new RateLimiter({
   maxRequests: 100, // 100 requests per minute
   windowMs: 60 * 1000,
-  useRedis: true
+  
 })
 
 // Stricter rate limiter for sensitive operations
 export const strictRateLimiter = new RateLimiter({
   maxRequests: 10, // 10 requests per minute
   windowMs: 60 * 1000,
-  useRedis: true
+  
 })
 
 // Per-user rate limiter
@@ -151,14 +120,14 @@ export const userRateLimiter = new RateLimiter({
     const userId = req.headers.get('x-user-id') || 'anonymous'
     return `user_limit:${userId}:${ip}`
   },
-  useRedis: true
+  
 })
 
 // Distributed rate limiter for high-traffic endpoints
 export const distributedRateLimiter = new RateLimiter({
   maxRequests: 1000, // 1000 requests per minute
   windowMs: 60 * 1000,
-  useRedis: true
+  
 })
 
 // Middleware function for rate limiting
@@ -250,20 +219,7 @@ export class AdaptiveRateLimiter extends RateLimiter {
   }
 
   private async getSystemLoad(): Promise<number> {
-    try {
-      // Get Redis stats as a proxy for system load
-      const stats = await cache.getStats()
-      if (stats.connected && stats.keyCount) {
-        // Simple heuristic: higher key count = higher load
-        // This is a simplified example - in production you'd want more sophisticated metrics
-        const load = Math.min(stats.keyCount / 10000, 1) // Normalize to 0-1
-        return load
-      }
-    } catch (error) {
-      console.warn('Failed to get system load for adaptive rate limiting:', error)
-    }
-
-    return 0 // Default to no load if we can't determine it
+    return 0 // Default to no load if Redis is not available
   }
 }
 
@@ -271,5 +227,5 @@ export class AdaptiveRateLimiter extends RateLimiter {
 export const adaptiveApiRateLimiter = new AdaptiveRateLimiter({
   baseMaxRequests: 100,
   windowMs: 60 * 1000,
-  useRedis: true
+  
 })

@@ -259,7 +259,7 @@ model RateLimit {
    - Use caching layers
 
 3. **Caching Strategy**
-   - Implement Redis for distributed caching
+   - Implement distributed caching
    - Use CDN for static assets
    - Cache database query results
 
@@ -329,7 +329,7 @@ model RateLimit {
 
 ### Future Enhancements
 1. **Advanced Caching**
-   - Redis integration
+   - Caching integration
    - Query result caching
    - Edge caching
 
