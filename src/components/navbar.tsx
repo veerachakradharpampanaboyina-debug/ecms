@@ -80,14 +80,14 @@ export default function Navbar() {
   const RoleIcon = session?.user?.role ? getRoleIcon(session.user.role as UserRole) : User
 
   return (
-    <nav className="bg-white shadow-lg border-b">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <GraduationCap className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-gray-900">ECMS</span>
+              <span className="text-xl font-bold text-foreground">ECMS</span>
             </Link>
           </div>
 
@@ -98,7 +98,7 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-foreground/80 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   {item.name}
                 </Link>
@@ -162,7 +162,7 @@ export default function Navbar() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-primary p-2"
+              className="text-foreground/80 hover:text-primary p-2"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -177,13 +177,13 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-foreground/80 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="pt-4 pb-3 border-t border-gray-200">
+              <div className="pt-4 pb-3 border-t border-border">
                 {session ? (
                   <div className="px-5 space-y-3">
                     <div className="flex items-center space-x-3">
@@ -194,8 +194,8 @@ export default function Navbar() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{session.user.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{session.user.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
                         <Badge variant="outline" className={`text-xs ${getRoleColor(session.user.role as UserRole)}`}>
                           <RoleIcon className="mr-1 h-3 w-3" />
                           {session.user.role}
