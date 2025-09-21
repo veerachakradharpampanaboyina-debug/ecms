@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { createUserWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc } from "firebase/firestore"
-import { auth, db } from "@/lib/firebase"
+import { NextRequest, NextResponse } from "next/server";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json();
     const {
       email,
       password,
@@ -36,20 +34,25 @@ export async function POST(request: NextRequest) {
       qualification,
       experience,
       joiningDate,
-    } = body
+    } = body;
 
-    // Create user in Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    const user = userCredential.user
+    // Create user in Firebase Authentication using Admin SDK
+    const userRecord = await adminAuth.createUser({
+      email,
+      password,
+      displayName: name,
+    });
 
-    // Store additional user data in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
+    const uid = userRecord.uid;
+
+    // Store common user data in Firestore
+    await adminDb.collection("users").doc(uid).set({
+      email,
       name,
       phone: phone || null,
       role,
-      createdAt: new Date(),
-    })
+      createdAt: new Date().toISOString(),
+    });
 
     // Create role-specific profile
     switch (role) {
@@ -58,17 +61,17 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             { error: "Missing required student fields" },
             { status: 400 }
-          )
+          );
         }
 
-        await setDoc(doc(db, "students", user.uid), {
-          userId: user.uid,
+        await adminDb.collection("students").doc(uid).set({
+          userId: uid,
           rollNumber,
           admissionNo,
           courseId,
           semester,
           batch,
-          dateOfBirth: new Date(dateOfBirth),
+          dateOfBirth: new Date(dateOfBirth).toISOString(),
           gender,
           address: address || null,
           city: city || null,
@@ -78,53 +81,59 @@ export async function POST(request: NextRequest) {
           parentName: parentName || null,
           parentPhone: parentPhone || null,
           parentEmail: parentEmail || null,
-          admissionDate: admissionDate ? new Date(admissionDate) : new Date(),
-        })
-        break
+          admissionDate: admissionDate ? new Date(admissionDate).toISOString() : new Date().toISOString(),
+        });
+        break;
 
       case "FACULTY":
         if (!employeeId || !departmentId || !designation || !joiningDate) {
           return NextResponse.json(
             { error: "Missing required faculty fields" },
             { status: 400 }
-          )
+          );
         }
 
-        await setDoc(doc(db, "faculty", user.uid), {
-          userId: user.uid,
+        await adminDb.collection("faculty").doc(uid).set({
+          userId: uid,
           employeeId,
           departmentId,
           designation,
           qualification: qualification || null,
           experience: experience || null,
-          joiningDate: new Date(joiningDate),
-        })
-        break
+          joiningDate: new Date(joiningDate).toISOString(),
+        });
+        break;
 
       case "ADMIN":
-        await setDoc(doc(db, "admins", user.uid), {
-          userId: user.uid,
-        })
-        break
+        await adminDb.collection("admins").doc(uid).set({
+          userId: uid,
+        });
+        break;
     }
 
     return NextResponse.json(
       {
         message: "User created successfully",
         user: {
-          id: user.uid,
-          email: user.email,
-          name: name, // Use name from request body
-          role: role, // Use role from request body
-        }
+          id: uid,
+          email: email,
+          name: name,
+          role: role,
+        },
       },
       { status: 201 }
-    )
+    );
   } catch (error: any) {
-    console.error("Registration error:", error)
+    console.error("Registration error:", error);
+    // Provide a more specific error message if available
+    const errorMessage = error.code === 'auth/email-already-exists' 
+      ? "The email address is already in use by another account."
+      : error.message || "Internal server error";
+    const status = error.code === 'auth/email-already-exists' ? 409 : 500;
+
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    )
+      { error: errorMessage },
+      { status: status }
+    );
   }
 }

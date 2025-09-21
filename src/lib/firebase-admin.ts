@@ -1,21 +1,18 @@
 // src/lib/firebase-admin.ts
 import * as admin from "firebase-admin";
 
-// TODO: Replace with your Firebase Admin SDK service account credentials
-// You can download this JSON file from Firebase Console -> Project settings -> Service accounts
 const serviceAccount = {
-  "type": "service_account",
-  "project_id": "YOUR_PROJECT_ID",
-  "private_key_id": "YOUR_PRIVATE_KEY_ID",
-  "private_key": "YOUR_PRIVATE_KEY",
-  "client_email": "YOUR_CLIENT_EMAIL",
-  "client_id": "YOUR_CLIENT_ID",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "YOUR_CLIENT_X509_CERT_URL",
-  "universe_domain": "googleapis.com"
-};
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  privateKeyId: process.env.FIREBASE_PRIVATE_KEY_ID,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  clientId: process.env.FIREBASE_CLIENT_ID,
+  authUri: process.env.FIREBASE_AUTH_URI,
+  tokenUri: process.env.FIREBASE_TOKEN_URI,
+  authProviderX509CertUrl: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+  clientC509CertUrl: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+  universeDomain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+} as admin.ServiceAccount;
 
 if (!admin.apps.length) {
   admin.initializeApp({

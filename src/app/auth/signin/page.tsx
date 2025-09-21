@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 import { Loader2, User, Lock, GraduationCap, Users, BookOpen, Building, Shield } from "lucide-react"
 
 export default function SignInPage() {
@@ -35,35 +35,21 @@ export default function SignInPage() {
     setError("")
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      const user = userCredential.user
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      })
 
-      // Assuming user role is stored in custom claims or a Firestore document
-      // For now, we'll use a placeholder for role redirection
-      // TODO: Implement actual role retrieval from Firestore or custom claims
-      const role = "STUDENT" // Placeholder for now
-
-      switch (role) {
-        case "ADMIN":
-          router.push("/admin")
-          break
-        case "HOD":
-          router.push("/hod")
-          break
-        case "FACULTY":
-          router.push("/faculty")
-          break
-        case "STUDENT":
-          router.push("/student")
-          break
-        case "PARENT":
-          router.push("/parent")
-          break
-        default:
-          router.push("/")
+      if (res?.error) {
+        setError("Invalid email or password. Please try again.")
+      } else if (res?.ok) {
+        // On success, redirect to the homepage.
+        // The homepage already has logic to redirect to the correct dashboard.
+        router.push("/")
       }
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -152,7 +138,7 @@ export default function SignInPage() {
                   </Select>
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col items-center space-y-4">
                 <Button type="submit" className="w-full" disabled={isLoading || !selectedRole}>
                   {isLoading ? (
                     <>
@@ -163,6 +149,12 @@ export default function SignInPage() {
                     "Sign In"
                   )}
                 </Button>
+                <p className="text-sm text-gray-600">
+                  Don't have an account?{" "}
+                  <Link href="/auth/register" className="font-medium text-blue-600 hover:underline">
+                    Register
+                  </Link>
+                </p>
               </CardFooter>
             </form>
           </Card>
