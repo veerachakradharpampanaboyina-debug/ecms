@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,41 +35,35 @@ export default function SignInPage() {
     setError("")
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false
-      })
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user
 
-      if (result?.error) {
-        setError("Invalid email or password")
-      } else {
-        // Redirect based on user role
-        const session = await fetch("/api/auth/session").then(res => res.json())
-        const role = session?.user?.role
+      // Assuming user role is stored in custom claims or a Firestore document
+      // For now, we'll use a placeholder for role redirection
+      // TODO: Implement actual role retrieval from Firestore or custom claims
+      const role = "STUDENT" // Placeholder for now
 
-        switch (role) {
-          case "ADMIN":
-            router.push("/admin")
-            break
-          case "HOD":
-            router.push("/hod")
-            break
-          case "FACULTY":
-            router.push("/faculty")
-            break
-          case "STUDENT":
-            router.push("/student")
-            break
-          case "PARENT":
-            router.push("/parent")
-            break
-          default:
-            router.push("/")
-        }
+      switch (role) {
+        case "ADMIN":
+          router.push("/admin")
+          break
+        case "HOD":
+          router.push("/hod")
+          break
+        case "FACULTY":
+          router.push("/faculty")
+          break
+        case "STUDENT":
+          router.push("/student")
+          break
+        case "PARENT":
+          router.push("/parent")
+          break
+        default:
+          router.push("/")
       }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
+    } catch (error: any) {
+      setError(error.message)
     } finally {
       setIsLoading(false)
     }

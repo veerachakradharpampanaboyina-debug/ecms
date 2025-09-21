@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import { db } from "@/lib/db"
-import { UserRole, Gender } from "@prisma/client"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase"
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,95 +38,72 @@ export async function POST(request: NextRequest) {
       joiningDate,
     } = body
 
-    // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: { email }
-    })
+    // Create user in Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const userData = {
-      email,
-      password: hashedPassword,
+    // Store additional user data in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
       name,
       phone: phone || null,
-      role: role as UserRole,
-    }
-
-    const user = await db.user.create({
-      data: userData
+      role,
+      createdAt: new Date(),
     })
 
     // Create role-specific profile
     switch (role) {
       case "STUDENT":
         if (!rollNumber || !admissionNo || !courseId || !semester || !batch || !dateOfBirth || !gender) {
-          await db.user.delete({ where: { id: user.id } })
           return NextResponse.json(
             { error: "Missing required student fields" },
             { status: 400 }
           )
         }
 
-        await db.student.create({
-          data: {
-            userId: user.id,
-            rollNumber,
-            admissionNo,
-            courseId,
-            semester,
-            batch,
-            dateOfBirth: new Date(dateOfBirth),
-            gender: gender as Gender,
-            address: address || null,
-            city: city || null,
-            state: state || null,
-            country: country || null,
-            pincode: pincode || null,
-            parentName: parentName || null,
-            parentPhone: parentPhone || null,
-            parentEmail: parentEmail || null,
-            admissionDate: admissionDate ? new Date(admissionDate) : new Date(),
-          }
+        await setDoc(doc(db, "students", user.uid), {
+          userId: user.uid,
+          rollNumber,
+          admissionNo,
+          courseId,
+          semester,
+          batch,
+          dateOfBirth: new Date(dateOfBirth),
+          gender,
+          address: address || null,
+          city: city || null,
+          state: state || null,
+          country: country || null,
+          pincode: pincode || null,
+          parentName: parentName || null,
+          parentPhone: parentPhone || null,
+          parentEmail: parentEmail || null,
+          admissionDate: admissionDate ? new Date(admissionDate) : new Date(),
         })
         break
 
       case "FACULTY":
         if (!employeeId || !departmentId || !designation || !joiningDate) {
-          await db.user.delete({ where: { id: user.id } })
           return NextResponse.json(
             { error: "Missing required faculty fields" },
             { status: 400 }
           )
         }
 
-        await db.faculty.create({
-          data: {
-            userId: user.id,
-            employeeId,
-            departmentId,
-            designation,
-            qualification: qualification || null,
-            experience: experience || null,
-            joiningDate: new Date(joiningDate),
-          }
+        await setDoc(doc(db, "faculty", user.uid), {
+          userId: user.uid,
+          employeeId,
+          departmentId,
+          designation,
+          qualification: qualification || null,
+          experience: experience || null,
+          joiningDate: new Date(joiningDate),
         })
         break
 
       case "ADMIN":
-        await db.admin.create({
-          data: {
-            userId: user.id,
-          }
+        await setDoc(doc(db, "admins", user.uid), {
+          userId: user.uid,
         })
         break
     }
@@ -135,18 +112,18 @@ export async function POST(request: NextRequest) {
       {
         message: "User created successfully",
         user: {
-          id: user.id,
+          id: user.uid,
           email: user.email,
-          name: user.name,
-          role: user.role,
+          name: name, // Use name from request body
+          role: role, // Use role from request body
         }
       },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error("Registration error:", error)
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error.message || "Internal server error" },
       { status: 500 }
     )
   }
