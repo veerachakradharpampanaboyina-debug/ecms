@@ -1,39 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession, Session } from 'next-auth'
+import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { adminDb, adminAuth } from '@/lib/firebase-admin'
-
-// Helper to check for admin role
-async function isAdmin(req: NextRequest) {
-  const session: Session | null = await getServerSession(authOptions as any)
-  // The type casting to any is a workaround for a possible type mismatch issue with NextAuth v4 and v5 in some setups.
-  // It's important to ensure your authOptions are correctly defined.
-  if (!session || session.user?.role !== 'ADMIN') {
-    return false
-  }
-  return true
-}
+import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
 // GET /api/admin/users - Get all users
 export async function GET(request: NextRequest) {
-  if (!(await isAdmin(request))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
-    const { searchParams } = new URL(request.url)
-    const role = searchParams.get('role')
-
-    let usersQuery = adminDb.collection("users")
-
-    if (role && role !== 'all') {
-      usersQuery = usersQuery.where("role", "==", role) as FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>;
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const querySnapshot = await usersQuery.orderBy("createdAt", "desc").get()
-    const users = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')
+    const role = searchParams.get('role')
 
-    return NextResponse.json({ users })
+    let whereClause: any = {}
+
+    if (search) {
+      whereClause.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    if (role && role !== 'all') {
+      whereClause.role = role
+    }
+
+    const users = await db.user.findMany({
+      where: whereClause,
+      include: {
+        student: true,
+        faculty: {
+          include: {
+            department: true
+          }
+        },
+        admin: true,
+        parent: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+      profileImage: user.profileImage,
+      department: user.faculty?.department?.name
+    }))
+
+    return NextResponse.json({ users: formattedUsers })
   } catch (error) {
     console.error('Error fetching users:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
@@ -42,51 +69,51 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/users - Create new user
 export async function POST(request: NextRequest) {
-  if (!(await isAdmin(request))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { name, email, role, phone, password } = body
 
-    if (!name || !email || !role || !password) {
-        return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-    }
-
-    // Create user in Firebase Authentication
-    const userRecord = await adminAuth.createUser({
-        email,
-        password,
-        displayName: name,
+    // Check if user already exists
+    const existingUser = await db.user.findUnique({
+      where: { email }
     })
 
-    // Store additional user data in Firestore
-    await adminDb.collection("users").doc(userRecord.uid).set({
-      email,
+    if (existingUser) {
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 })
+    }
+
+    // Create user with provided password or default
+    const defaultPassword = password || 'ChangeMe123!'
+    const hashedPassword = await bcrypt.hash(defaultPassword, 12)
+
+    const userData: any = {
       name,
-      phone: phone || null,
+      email,
       role,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      password: hashedPassword,
+      phone: phone || null
+    }
+
+    const user = await db.user.create({
+      data: userData
     })
-    
-    // TODO: Add logic to create role-specific documents (e.g., in 'students' or 'faculty' collections) if needed.
 
-    const newUser = {
-        id: userRecord.uid,
-        name,
-        email,
-        role,
-        phone
-    }
-
-    return NextResponse.json(newUser, { status: 201 })
-  } catch (error: any) {
+    return NextResponse.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt
+    })
+  } catch (error) {
     console.error('Error creating user:', error)
-    if (error.code === 'auth/email-already-exists') {
-        return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 })
-    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

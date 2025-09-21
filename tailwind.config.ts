@@ -7,7 +7,6 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
   	extend: {
@@ -54,9 +53,9 @@ const config: Config = {
   			}
   		},
   		borderRadius: {
-  			lg: '0.5rem',
-  			md: '0.375rem',
-  			sm: '0.25rem'
+  			lg: 'var(--radius)',
+  			md: 'calc(var(--radius) - 2px)',
+  			sm: 'calc(var(--radius) - 4px)'
   		}
   	}
   },

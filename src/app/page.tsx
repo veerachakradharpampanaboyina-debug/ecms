@@ -68,11 +68,11 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Engineering College
-              <span className="block text-yellow-400">Management System</span>
+              College Technology
+              <span className="block text-yellow-400">Infrastructure Suite</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-blue-100">
-              Transforming education through innovative technology and comprehensive management solutions
+              Transforming education through comprehensive technology solutions, security, and innovation
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/signin">
@@ -96,82 +96,166 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Our Platform?
+              College Technology Infrastructure
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience the future of education management with our comprehensive, user-friendly platform
+              Comprehensive technology solutions for modern educational excellence
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* College Domain Mail System */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-blue-600" />
+                  <MessageSquare className="h-8 w-8 text-blue-600" />
                 </div>
-                <CardTitle>Role-Based Access</CardTitle>
+                <CardTitle>College Domain Mail</CardTitle>
                 <CardDescription>
-                  Secure, customized access for Admin, HOD, Faculty, Students, and Parents
+                  Professional email addresses for all students, faculty, and staff with college domain
                 </CardDescription>
               </CardHeader>
             </Card>
 
+            {/* Secure Chatting Application */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-8 w-8 text-green-600" />
+                  <MessageSquare className="h-8 w-8 text-green-600" />
                 </div>
-                <CardTitle>Academic Excellence</CardTitle>
+                <CardTitle>Secure Messenger</CardTitle>
                 <CardDescription>
-                  Comprehensive course management, scheduling, and learning resources
+                  End-to-end encrypted messaging app for academic communication within college ecosystem
                 </CardDescription>
               </CardHeader>
             </Card>
 
+            {/* File and Document Storage */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-8 w-8 text-purple-600" />
+                  <BookOpen className="h-8 w-8 text-purple-600" />
                 </div>
-                <CardTitle>Smart Attendance</CardTitle>
+                <CardTitle>Cloud Storage</CardTitle>
                 <CardDescription>
-                  Real-time tracking with automated reports and parent notifications
+                  Secure cloud-based storage for academic materials and documents
                 </CardDescription>
               </CardHeader>
             </Card>
 
+            {/* Student Results and Timetable */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="h-8 w-8 text-yellow-600" />
+                  <Calendar className="h-8 w-8 text-yellow-600" />
                 </div>
-                <CardTitle>Seamless Payments</CardTitle>
+                <CardTitle>Results & Timetable</CardTitle>
                 <CardDescription>
-                  Online fee payments with instant receipts and comprehensive tracking
+                  Centralized access to academic results, class schedules, and timetables
                 </CardDescription>
               </CardHeader>
             </Card>
 
+            {/* Competitive Exams Platform */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="h-8 w-8 text-red-600" />
+                  <Award className="h-8 w-8 text-red-600" />
                 </div>
-                <CardTitle>Effective Communication</CardTitle>
+                <CardTitle>Exam Platform</CardTitle>
                 <CardDescription>
-                  Integrated messaging, announcements, and notification system
+                  Online exam platform with mock tests, practice exams, and skill assessments
                 </CardDescription>
               </CardHeader>
             </Card>
 
+            {/* Technology Blogs with AI Q&A */}
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="h-8 w-8 text-indigo-600" />
                 </div>
-                <CardTitle>Advanced Analytics</CardTitle>
+                <CardTitle>Tech Blogs & AI Q&A</CardTitle>
                 <CardDescription>
-                  Comprehensive reporting and insights for informed decision-making
+                  Interactive platform for technical knowledge sharing with AI-driven Q&A
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Hackathons and Tech Events */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-orange-600" />
+                </div>
+                <CardTitle>Hackathons & Events</CardTitle>
+                <CardDescription>
+                  Regular coding competitions and tech events for skill development
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* College Events Portal */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-pink-600" />
+                </div>
+                <CardTitle>Events Portal</CardTitle>
+                <CardDescription>
+                  Digital hub for managing college events, registrations, and schedules
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Funds Management */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="h-8 w-8 text-teal-600" />
+                </div>
+                <CardTitle>Funds Management</CardTitle>
+                <CardDescription>
+                  Transparent financial tracking system for all college transactions
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Placement Tracking */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-8 w-8 text-cyan-600" />
+                </div>
+                <CardTitle>Placement Tracking</CardTitle>
+                <CardDescription>
+                  Comprehensive system for monitoring student placements and alumni data
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Accreditation Support */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="h-8 w-8 text-emerald-600" />
+                </div>
+                <CardTitle>Accreditation Tools</CardTitle>
+                <CardDescription>
+                  Support for NBA, NAAC, AICTE accreditation and ranking improvements
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Comprehensive Documentation */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="h-8 w-8 text-gray-600" />
+                </div>
+                <CardTitle>Documentation</CardTitle>
+                <CardDescription>
+                  Thorough documentation of all procedures, systems, and improvements
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -283,10 +367,10 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Transform Your College Management?
+            Ready to Transform Your College Technology Infrastructure?
           </h2>
           <p className="text-xl mb-8 text-blue-100">
-            Join thousands of educational institutions already using our platform
+            Join leading educational institutions in embracing comprehensive technology solutions
           </p>
           <Link href="/auth/signin">
             <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">

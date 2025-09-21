@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,23 +10,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
 import { Loader2, User, Lock, GraduationCap, Users, BookOpen, Building, Shield } from "lucide-react"
+import { UserRole } from "@/lib/types"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [selectedRole, setSelectedRole] = useState("")
+  const [selectedRole, setSelectedRole] = useState<UserRole | "">("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const roleOptions = [
-    { value: "ADMIN", label: "Administrator", icon: Shield, color: "bg-red-100 text-red-800", description: "System administration and configuration" },
-    { value: "HOD", label: "Head of Department", icon: Building, color: "bg-blue-100 text-blue-800", description: "Department management and oversight" },
-    { value: "FACULTY", label: "Faculty", icon: BookOpen, color: "bg-green-100 text-green-800", description: "Teaching and academic management" },
-    { value: "STUDENT", label: "Student", icon: GraduationCap, color: "bg-purple-100 text-purple-800", description: "Academic progress and resources" },
-    { value: "PARENT", label: "Parent", icon: Users, color: "bg-yellow-100 text-yellow-800", description: "Student progress monitoring" }
+    { value: UserRole.ADMIN, label: "Administrator", icon: Shield, color: "bg-red-100 text-red-800", description: "System administration and configuration" },
+    { value: UserRole.HOD, label: "Head of Department", icon: Building, color: "bg-blue-100 text-blue-800", description: "Department management and oversight" },
+    { value: UserRole.FACULTY, label: "Faculty", icon: BookOpen, color: "bg-green-100 text-green-800", description: "Teaching and academic management" },
+    { value: UserRole.STUDENT, label: "Student", icon: GraduationCap, color: "bg-purple-100 text-purple-800", description: "Academic progress and resources" },
+    { value: UserRole.PARENT, label: "Parent", icon: Users, color: "bg-yellow-100 text-yellow-800", description: "Student progress monitoring" }
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,21 +35,76 @@ export default function SignInPage() {
     setError("")
 
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
-        email,
+      // Add email header for rate limiting
+      const headers = new Headers()
+      headers.append('x-email', email)
+
+      const result = await signIn("credentials", {
+        email: email.toLowerCase().trim(),
         password,
+        redirect: false,
+        headers: Object.fromEntries(headers)
       })
 
-      if (res?.error) {
-        setError("Invalid email or password. Please try again.")
-      } else if (res?.ok) {
-        // On success, redirect to the homepage.
-        // The homepage already has logic to redirect to the correct dashboard.
-        router.push("/")
+      if (result?.error) {
+        // Handle specific error types
+        if (result.error.includes("rate limit")) {
+          setError("Too many login attempts. Please try again later.")
+        } else if (result.error.includes("deactivated")) {
+          setError("Your account has been deactivated. Please contact support.")
+        } else if (result.error.includes("Invalid email format")) {
+          setError("Please enter a valid email address.")
+        } else if (result.error.includes("Password must be at least")) {
+          setError("Password must be at least 6 characters long.")
+        } else {
+          setError("Invalid email or password")
+        }
+      } else {
+        // Redirect based on user role
+        try {
+          const sessionResponse = await fetch("/api/auth/session", {
+            headers: { 'Cache-Control': 'no-cache' }
+          })
+          const session = await sessionResponse.json()
+          const role = session?.user?.role
+
+          switch (role) {
+            case "ADMIN":
+              router.push("/admin")
+              break
+            case "HOD":
+              router.push("/hod")
+              break
+            case "FACULTY":
+              router.push("/faculty")
+              break
+            case "STUDENT":
+              router.push("/student")
+              break
+            case "PARENT":
+              router.push("/parent")
+              break
+            default:
+              router.push("/")
+          }
+        } catch (sessionError) {
+          console.error("Failed to get session after login:", sessionError)
+          setError("Login successful but failed to redirect. Please refresh the page.")
+        }
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
+      console.error("Login error:", error)
+      if (error instanceof Error) {
+        if (error.message.includes("fetch")) {
+          setError("Network error. Please check your internet connection.")
+        } else if (error.message.includes("timeout")) {
+          setError("Request timed out. Please try again.")
+        } else {
+          setError("An error occurred. Please try again.")
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -121,7 +176,7 @@ export default function SignInPage() {
 
                 <div className="space-y-2">
                   <Label>Select Your Role</Label>
-                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value)}>
+                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
@@ -138,7 +193,7 @@ export default function SignInPage() {
                   </Select>
                 </div>
               </CardContent>
-              <CardFooter className="flex flex-col items-center space-y-4">
+              <CardFooter>
                 <Button type="submit" className="w-full" disabled={isLoading || !selectedRole}>
                   {isLoading ? (
                     <>
@@ -149,12 +204,6 @@ export default function SignInPage() {
                     "Sign In"
                   )}
                 </Button>
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link href="/auth/register" className="font-medium text-blue-600 hover:underline">
-                    Register
-                  </Link>
-                </p>
               </CardFooter>
             </form>
           </Card>

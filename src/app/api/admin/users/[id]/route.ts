@@ -1,124 +1,222 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession, Session } from 'next-auth/next'
+import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { adminDb, adminAuth } from '@/lib/firebase-admin'
+import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
-async function getAdminSession(req: NextRequest) {
-  const session: Session | null = await getServerSession(authOptions as any);
-  if (!session || session.user?.role !== 'ADMIN') {
-    return null;
-  }
-  return session;
-}
-
-// GET /api/admin/users/[id] - Get a single user with details
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await getAdminSession(request))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+// GET /api/admin/users/[id] - Get single user
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const userDoc = await adminDb.collection('users').doc(params.id).get();
-    if (!userDoc.exists) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-    const user = { id: userDoc.id, ...userDoc.data() };
-
-    const role = user.role as string | undefined;
-    if (role && ['STUDENT', 'FACULTY', 'ADMIN'].includes(role)) {
-        const detailsCollection = `${role.toLowerCase()}s`;
-        const detailsDoc = await adminDb.collection(detailsCollection).doc(params.id).get();
-        if (detailsDoc.exists) {
-            (user as any).details = detailsDoc.data();
-        }
-    }
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error(`Error fetching user ${params.id}:`, error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-// PUT /api/admin/users/[id] - Update a user
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAdminSession(request);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  try {
-    const body = await request.json();
-    const { name, email, role, details } = body;
-
-    // Update Firebase Auth user
-    await adminAuth.updateUser(params.id, {
-        email: email,
-        displayName: name,
-    });
-
-    const batch = adminDb.batch();
-
-    // Update 'users' collection
-    const userRef = adminDb.collection('users').doc(params.id);
-    batch.update(userRef, { name, email, role, updatedAt: new Date().toISOString() });
-
-    // Update role-specific collection
-    if (role && details) {
-        const detailsCollection = `${role.toLowerCase()}s`;
-        const detailsRef = adminDb.collection(detailsCollection).doc(params.id);
-        batch.set(detailsRef, details, { merge: true });
-    }
-
-    await batch.commit();
-
-    return NextResponse.json({ message: 'User updated successfully' });
-  } catch (error: any) {
-    console.error(`Error updating user ${params.id}:`, error);
-    if (error.code === 'auth/email-already-exists') {
-        return NextResponse.json({ error: 'The email address is already in use by another account.' }, { status: 409 });
-    }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-// DELETE /api/admin/users/[id] - Delete a user
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getAdminSession(request);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Prevent admin from deleting themselves
-  if (params.id === (session.user as any)?.id) {
-      return NextResponse.json({ error: 'You cannot delete your own account.' }, { status: 403 });
-  }
-
-  try {
-    const userDoc = await adminDb.collection('users').doc(params.id).get();
-    if (!userDoc.exists) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-    const userData = userDoc.data();
-
-    const batch = adminDb.batch();
-
-    // 1. Delete from 'users' collection
-    batch.delete(adminDb.collection('users').doc(params.id));
-
-    // 2. Delete from role-specific collection
-    if (userData?.role && ['STUDENT', 'FACULTY', 'ADMIN'].includes(userData.role)) {
-        const roleCollection = `${userData.role.toLowerCase()}s`;
-        batch.delete(adminDb.collection(roleCollection).doc(params.id));
-    }
+    const session = await getServerSession(authOptions)
     
-    // 3. Commit Firestore deletions
-    await batch.commit();
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // 4. Delete from Firebase Authentication
-    await adminAuth.deleteUser(params.id);
+    const user = await db.user.findUnique({
+      where: { id: params.id },
+      include: {
+        profile: {
+          include: {
+            department: true
+          }
+        },
+        studentProfile: true,
+        facultyProfile: true,
+        parentProfile: true
+      }
+    })
 
-    return NextResponse.json({ message: 'User deleted successfully' });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      department: user.profile?.department,
+      phone: user.profile?.phone,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt
+    })
   } catch (error) {
-    console.error(`Error deleting user ${params.id}:`, error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Error fetching user:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+// PUT /api/admin/users/[id] - Update user
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { name, email, role, status, phone, departmentId } = body
+
+    const existingUser = await db.user.findUnique({
+      where: { id: params.id }
+    })
+
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Check if email is being changed and already exists
+    if (email !== existingUser.email) {
+      const emailExists = await db.user.findUnique({
+        where: { email }
+      })
+
+      if (emailExists) {
+        return NextResponse.json({ error: 'Email already exists' }, { status: 400 })
+      }
+    }
+
+    const updateData: any = {
+      name,
+      email,
+      role,
+      status
+    }
+
+    // Update profile if it exists
+    if (existingUser.profile) {
+      updateData.profile = {
+        update: {
+          phone,
+          departmentId: departmentId || null
+        }
+      }
+    } else if (phone || departmentId) {
+      // Create profile if it doesn't exist
+      updateData.profile = {
+        create: {
+          phone,
+          departmentId: departmentId || null
+        }
+      }
+    }
+
+    const updatedUser = await db.user.update({
+      where: { id: params.id },
+      data: updateData,
+      include: {
+        profile: {
+          include: {
+            department: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      status: updatedUser.status,
+      department: updatedUser.profile?.department,
+      phone: updatedUser.profile?.phone,
+      lastLogin: updatedUser.lastLogin,
+      createdAt: updatedUser.createdAt
+    })
+  } catch (error) {
+    console.error('Error updating user:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+// DELETE /api/admin/users/[id] - Delete user
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: params.id }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Prevent deletion of the current admin user
+    if (user.id === session.user.id) {
+      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
+    }
+
+    await db.user.delete({
+      where: { id: params.id }
+    })
+
+    return NextResponse.json({ message: 'User deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+// PATCH /api/admin/users/[id]/toggle-status - Toggle user status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = await db.user.findUnique({
+      where: { id: params.id }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Prevent deactivation of the current admin user
+    if (user.id === session.user.id && user.status === 'active') {
+      return NextResponse.json({ error: 'Cannot deactivate your own account' }, { status: 400 })
+    }
+
+    const updatedUser = await db.user.update({
+      where: { id: params.id },
+      data: {
+        status: user.status === 'active' ? 'inactive' : 'active'
+      }
+    })
+
+    return NextResponse.json({
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      status: updatedUser.status,
+      message: `User ${updatedUser.status === 'active' ? 'activated' : 'deactivated'} successfully`
+    })
+  } catch (error) {
+    console.error('Error toggling user status:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

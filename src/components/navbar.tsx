@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
-type UserRole = "ADMIN" | "HOD" | "FACULTY" | "STUDENT" | "PARENT";
+import { UserRole } from "@/lib/types"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -46,33 +46,33 @@ export default function Navbar() {
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case "ADMIN": return Shield
-      case "HOD": return Building
-      case "FACULTY": return BookOpen
-      case "STUDENT": return StudentIcon
-      case "PARENT": return ParentIcon
+      case UserRole.ADMIN: return Shield
+      case UserRole.HOD: return Building
+      case UserRole.FACULTY: return BookOpen
+      case UserRole.STUDENT: return StudentIcon
+      case UserRole.PARENT: return ParentIcon
       default: return User
     }
   }
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case "ADMIN": return "bg-red-100 text-red-800"
-      case "HOD": return "bg-blue-100 text-blue-800"
-      case "FACULTY": return "bg-green-100 text-green-800"
-      case "STUDENT": return "bg-purple-100 text-purple-800"
-      case "PARENT": return "bg-yellow-100 text-yellow-800"
+      case UserRole.ADMIN: return "bg-red-100 text-red-800"
+      case UserRole.HOD: return "bg-blue-100 text-blue-800"
+      case UserRole.FACULTY: return "bg-green-100 text-green-800"
+      case UserRole.STUDENT: return "bg-purple-100 text-purple-800"
+      case UserRole.PARENT: return "bg-yellow-100 text-yellow-800"
       default: return "bg-gray-100 text-gray-800"
     }
   }
 
   const getDashboardLink = (role: UserRole) => {
     switch (role) {
-      case "ADMIN": return "/admin"
-      case "HOD": return "/hod"
-      case "FACULTY": return "/faculty"
-      case "STUDENT": return "/student"
-      case "PARENT": return "/parent"
+      case UserRole.ADMIN: return "/admin"
+      case UserRole.HOD: return "/hod"
+      case UserRole.FACULTY: return "/faculty"
+      case UserRole.STUDENT: return "/student"
+      case UserRole.PARENT: return "/parent"
       default: return "/"
     }
   }
@@ -80,14 +80,14 @@ export default function Navbar() {
   const RoleIcon = session?.user?.role ? getRoleIcon(session.user.role as UserRole) : User
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
+    <nav className="bg-white shadow-lg border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <GraduationCap className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-foreground">ECMS</span>
+              <span className="text-xl font-bold text-gray-900">ECMS</span>
             </Link>
           </div>
 
@@ -98,7 +98,7 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-foreground/80 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   {item.name}
                 </Link>
@@ -162,7 +162,7 @@ export default function Navbar() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-foreground/80 hover:text-primary p-2"
+              className="text-gray-700 hover:text-primary p-2"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -177,13 +177,13 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-foreground/80 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                  className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="pt-4 pb-3 border-t border-border">
+              <div className="pt-4 pb-3 border-t border-gray-200">
                 {session ? (
                   <div className="px-5 space-y-3">
                     <div className="flex items-center space-x-3">
@@ -194,8 +194,8 @@ export default function Navbar() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{session.user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{session.user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
                         <Badge variant="outline" className={`text-xs ${getRoleColor(session.user.role as UserRole)}`}>
                           <RoleIcon className="mr-1 h-3 w-3" />
                           {session.user.role}

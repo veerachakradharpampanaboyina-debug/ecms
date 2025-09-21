@@ -1,23 +1,8 @@
-/* @tailwind directives require Tailwind CSS processing. Uncomment if using Tailwind CLI or PostCSS. */
-/* @tailwind base; */
-/* @tailwind components; */
-/* @tailwind utilities; */
-
-@layer base {
-  * {
-    /* @apply border-border outline-ring/50; */
-    border-color: var(--border);
-    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
-  }
-  body {
-    background-color: #fff;
-    color: #000;
-  }
-}
-
+@import "tailwindcss";
 @import "tw-animate-css";
 
 
+/* Moved custom properties from @theme inline to :root */
 
 :root {
   --radius: 0.625rem;
@@ -27,8 +12,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.45 0.15 240); /* A vibrant blue */
-  --primary-foreground: oklch(0.985 0 0); /* Keep foreground light for contrast */
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -51,129 +36,87 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-
-
-  @layer base {
-    * {
-      border-color: var(--border);
-      outline-color: var(--ring);
-      outline-width: 1px;
-      outline-style: dashed;
-      font-family: 'Merriweather', 'Noto Serif', serif;
-      background-color: var(--background);
-      color: var(--foreground);
-      min-height: 100vh;
-      background-image: linear-gradient(135deg, #fbeee6 0%, #f5d7b2 100%);
-      /* Subtle paisley pattern overlay for elite desi vibe */
-      background-blend-mode: multiply;
-      background-image: linear-gradient(135deg, #fbeee6 0%, #f5d7b2 100%);
-      /* Subtle paisley pattern overlay for elite desi vibe */
-      background-blend-mode: multiply;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Merriweather', 'Noto Serif', serif;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: 0.02em;
-      text-shadow: 0 2px 8px #e6b98033;
-    }
-    a {
-      color: var(--primary);
-      text-decoration: underline dotted;
-      text-underline-offset: 2px;
-      transition: color 0.2s;
-      border-radius: 9999px;
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-      font-weight: bold;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-      background: linear-gradient(90deg, #b76e79 0%, #f5d7b2 100%);
-      color: #fff8e1;
-      border: 2px solid var(--border);
-      box-shadow: 0 2px 8px #b76e7933;
-      transition: background 0.2s, color 0.2s;
-      background: linear-gradient(90deg, #b76e79 0%, #f5d7b2 100%);
-      color: #fff8e1;
-      border: 2px solid var(--border);
-      box-shadow: 0 2px 8px #b76e7933;
-      transition: background 0.2s, color 0.2s;
-    }
-    button:hover, .btn:hover {
-      background: linear-gradient(90deg, #a8324a 0%, #fbeee6 100%);
-      color: #b76e79;
-    }
-  }
-
-  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Noto+Serif:wght@400;700&display=swap');
-
-  :root {
-    --radius: 0.75rem;
-    --background: #fbeee6;
-    --foreground: #3d1f00;
-    --card: #fff8e1;
-    --card-foreground: #3d1f00;
-    --popover: #fff8e1;
-    --popover-foreground: #3d1f00;
-    --primary: #b76e79; /* Deep rose gold */
-    --primary-foreground: #fff8e1;
-    --secondary: #f5d7b2; /* Warm sand */
-    --secondary-foreground: #3d1f00;
-    --muted: #e6b980;
-    --muted-foreground: #7c4700;
-    --accent: #a8324a; /* Rich maroon */
-    --accent-foreground: #fff8e1;
-    --destructive: #d7263d;
-    --border: #e6b980;
-    --input: #e6b980;
-    --ring: #b76e79;
-    --chart-1: #b76e79;
-    --chart-2: #a8324a;
-    --chart-3: #f5d7b2;
-    --chart-4: #e6b980;
-    --chart-5: #7c4700;
-    --sidebar: #fff8e1;
-    --sidebar-foreground: #3d1f00;
-    --sidebar-primary: #b76e79;
-    --sidebar-primary-foreground: #fff8e1;
-    --sidebar-accent: #a8324a;
-    --sidebar-accent-foreground: #fff8e1;
-    --sidebar-border: #e6b980;
-    --sidebar-ring: #b76e79;
-  }
-
-  .dark {
-    --background: #3d1f00;
-    --foreground: #fff8e1;
-    --card: #7c4700;
-    --card-foreground: #fff8e1;
-    --popover: #7c4700;
-    --popover-foreground: #fff8e1;
-    --primary: #e6b980; /* Lighter gold for dark mode */
-    --primary-foreground: #3d1f00;
-    --secondary: #b76e79;
-    --secondary-foreground: #fff8e1;
-    --muted: #a8324a;
-    --muted-foreground: #fff8e1;
-    --accent: #f5d7b2;
-    --accent-foreground: #3d1f00;
-    --destructive: #d7263d;
-    --border: #b76e79;
-    --input: #b76e79;
-    --ring: #e6b980;
-    --chart-1: #e6b980;
-    --chart-2: #b76e79;
-    --chart-3: #a8324a;
-    --chart-4: #f5d7b2;
-    --chart-5: #fff8e1;
-    --sidebar: #7c4700;
-    --sidebar-foreground: #fff8e1;
-    --sidebar-primary: #e6b980;
-    --sidebar-primary-foreground: #3d1f00;
-    --sidebar-accent: #b76e79;
-    --sidebar-accent-foreground: #fff8e1;
-    --sidebar-border: #b76e79;
-    --sidebar-ring: #e6b980;
-  }
+  --sidebar-ring: oklch(0.708 0 0);
 }
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Moved from @theme inline */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }

@@ -1,22 +1,41 @@
-import NextAuth from "next-auth";
+import { UserRole } from "@/lib/types"
+import "next-auth"
 
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
-      role: string; // Assuming role is a string
-    } & DefaultSession["user"];
+      id: string
+      email: string
+      name: string
+      role: UserRole
+      profileImage?: string
+      studentId?: string
+      facultyId?: string
+      adminId?: string
+      parentId?: string
+    }
   }
 
   interface User {
-    id: string;
-    role: string; // Assuming role is a string
+    id: string
+    email: string
+    name: string
+    role: UserRole
+    profileImage?: string
+    studentId?: string
+    facultyId?: string
+    adminId?: string
+    parentId?: string
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: string;
-    role: string; // Assuming role is a string
+    role: UserRole
+    studentId?: string
+    facultyId?: string
+    adminId?: string
+    parentId?: string
+    profileImage?: string
   }
 }

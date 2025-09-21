@@ -1,7 +1,22 @@
 import { Server } from 'socket.io';
 
-export const setupSocket = (io: Server) => {
-  io.on('connection', (socket) => {
+let io: Server | null = null;
+
+export const getIO = (): Server => {
+  if (!io) {
+    throw new Error('Socket.IO not initialized');
+  }
+  return io;
+};
+
+export const setIO = (socketIO: Server): void => {
+  io = socketIO;
+};
+
+export const setupSocket = (socketIO: Server) => {
+  setIO(socketIO);
+  
+  socketIO.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
     
     // Handle messages
